@@ -35,8 +35,14 @@ class AuthProvider extends ChangeNotifier {
 
     // Listen for subsequent auth state changes (login/logout)
     _supabase.auth.onAuthStateChange.listen((data) {
-      if (data.session != null) {
-        _setUserFromSession(data.session!);
+      final event = data.event;
+      final session = data.session;
+
+      // Ignore the initial session event — we already handled it above
+      if (event == AuthChangeEvent.initialSession) return;
+
+      if (session != null) {
+        _setUserFromSession(session);
       } else {
         _state = AuthState.unauthenticated;
         _user = null;
@@ -61,6 +67,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─────────────────────────────────────────────
+  // Sign-in Methods
+  // ─────────────────────────────────────────────
+
   Future<void> signInWithGoogle() async {
     try {
       _state = AuthState.loading;
@@ -69,6 +79,7 @@ class AuthProvider extends ChangeNotifier {
         OAuthProvider.google,
         redirectTo: 'io.supabase.rayo://login-callback/',
       );
+      // OAuth redirects externally; onAuthStateChange handles the return
     } catch (e) {
       _errorMessage = e.toString();
       _state = AuthState.error;
@@ -97,10 +108,16 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       // Huawei OAuth is not natively supported by Supabase.
       // This uses anonymous sign-in as fallback with Huawei metadata.
-      // For full HMS Core integration, configure AppGallery Connect
-      // and add a Supabase Edge Function for token verification.
-      await _supabase.auth.signInAnonymously();
+      final response = await _supabase.auth.signInAnonymously();
+      // Explicitly handle the response instead of relying only on the listener
+      if (response.session != null) {
+        _setUserFromSession(response.session!);
+      } else {
+        _state = AuthState.unauthenticated;
+        notifyListeners();
+      }
     } catch (e) {
+      debugPrint('❌ Huawei sign-in error: $e');
       _errorMessage = e.toString();
       _state = AuthState.error;
       notifyListeners();
@@ -111,8 +128,17 @@ class AuthProvider extends ChangeNotifier {
     try {
       _state = AuthState.loading;
       notifyListeners();
-      await _supabase.auth.signInAnonymously();
+      final response = await _supabase.auth.signInAnonymously();
+      // Explicitly handle the response — don't depend solely on the listener
+      if (response.session != null) {
+        _setUserFromSession(response.session!);
+      } else {
+        debugPrint('⚠️ signInAnonymously returned null session');
+        _state = AuthState.unauthenticated;
+        notifyListeners();
+      }
     } catch (e) {
+      debugPrint('❌ Guest sign-in error: $e');
       _errorMessage = e.toString();
       _state = AuthState.error;
       notifyListeners();

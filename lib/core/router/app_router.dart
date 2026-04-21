@@ -36,9 +36,15 @@ class AppRouter {
     final isSplash = currentPath == '/splash';
     final isSignIn = currentPath == '/sign-in';
 
-    // ── While auth is still initializing, keep showing splash
-    if (authState == AuthState.initial || authState == AuthState.loading) {
+    // ── Still initializing (app just launched) → stay on splash
+    if (authState == AuthState.initial) {
       return isSplash ? null : '/splash';
+    }
+
+    // ── Loading (user pressed a sign-in button) → stay on current page
+    //    Let the sign-in screen show its own loading indicator.
+    if (authState == AuthState.loading) {
+      return null;
     }
 
     // ── Authenticated → go home
