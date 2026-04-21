@@ -6,6 +6,9 @@ import 'app_typography.dart';
 class AppTheme {
   AppTheme._();
 
+  static ThemeData get light => lightTheme;
+  static ThemeData get dark => darkTheme;
+
   // ==========================================
   // 🌙 Dark Theme (التصميم الأساسي من Figma)
   // ==========================================

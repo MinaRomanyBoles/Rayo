@@ -1,9 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:rayo_broadband_speed_test/core/theme/app_theme.dart';
-import 'package:rayo_broadband_speed_test/features/speed_test/presentation/pages/speed_test_page.dart';
+import 'package:rayo_broadband_speed_test/l10n/generated/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const RayoApp());
+import 'core/constants/supabase_config.dart';
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
+import 'core/theme/locale_provider.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/speed_test/presentation/providers/speed_test_provider.dart';
+import 'features/leaderboard/presentation/providers/leaderboard_provider.dart';
+import 'features/history/presentation/providers/history_provider.dart';
+import 'features/settings/presentation/providers/settings_provider.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => SpeedTestProvider()),
+        ChangeNotifierProvider(create: (_) => LeaderboardProvider()),
+        ChangeNotifierProvider(create: (_) => HistoryProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+      ],
+      child: const RayoApp(),
+    ),
+  );
 }
 
 class RayoApp extends StatelessWidget {
@@ -11,13 +43,19 @@ class RayoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Rayo Speed Test',
+    final themeProvider = context.watch<ThemeProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
+
+    return MaterialApp.router(
+      title: 'Rayo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
-      home: const SpeedTestPage(),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeProvider.themeMode,
+      locale: localeProvider.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: AppRouter.router,
     );
   }
 }

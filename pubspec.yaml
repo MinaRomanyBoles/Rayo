@@ -1,7 +1,7 @@
 name: rayo_broadband_speed_test
-description: "A new Flutter project."
+description: "Rayo — Internet Speed Test App"
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.11.1
@@ -9,7 +9,31 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_bloc: ^9.1.1
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Backend
+  supabase_flutter: ^2.5.0
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # Storage
+  shared_preferences: ^2.2.3
+
+  # UI
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  cupertino_icons: ^1.0.8
+
+  # Utils
+  intl: ^0.20.2
+  connectivity_plus: ^6.0.3
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +42,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/fonts/
+
+  fonts:
+    - family: AbdElRadyPro
+      fonts:
+        - asset: assets/fonts/Abd ElRady Pro Regular.otf
+          weight: 400
+        - asset: assets/fonts/Abd ElRady Pro.otf
+          weight: 700
