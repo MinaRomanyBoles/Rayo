@@ -21,7 +21,10 @@ class AuthProvider extends ChangeNotifier {
     _initAuth();
   }
 
-  void _initAuth() {
+  Future<void> _initAuth() async {
+    // Keep splash visible for at least 2 seconds for animation
+    await Future.delayed(const Duration(seconds: 2));
+
     final session = _supabase.auth.currentSession;
     if (session != null) {
       _setUserFromSession(session);
@@ -30,6 +33,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
 
+    // Listen for subsequent auth state changes (login/logout)
     _supabase.auth.onAuthStateChange.listen((data) {
       if (data.session != null) {
         _setUserFromSession(data.session!);

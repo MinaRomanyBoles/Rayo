@@ -22,24 +22,30 @@ Future<void> main() async {
     anonKey: SupabaseConfig.anonKey,
   );
 
+  // Create AuthProvider early so AppRouter can reference it
+  final authProvider = AuthProvider();
+  final appRouter = AppRouter(authProvider);
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider(create: (_) => SpeedTestProvider()),
         ChangeNotifierProvider(create: (_) => LeaderboardProvider()),
         ChangeNotifierProvider(create: (_) => HistoryProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
-      child: const RayoApp(),
+      child: RayoApp(appRouter: appRouter),
     ),
   );
 }
 
 class RayoApp extends StatelessWidget {
-  const RayoApp({super.key});
+  final AppRouter appRouter;
+
+  const RayoApp({super.key, required this.appRouter});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +61,7 @@ class RayoApp extends StatelessWidget {
       locale: localeProvider.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      routerConfig: AppRouter.router,
+      routerConfig: appRouter.router,
     );
   }
 }
